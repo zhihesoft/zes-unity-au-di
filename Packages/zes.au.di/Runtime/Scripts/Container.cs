@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Au.DI.Providers;
+using System;
 using System.Collections.Generic;
+using System.Reflection;
+using UnityEngine.Assertions;
 
 namespace Au.DI
 {
@@ -25,11 +28,13 @@ namespace Au.DI
         }
 
         private Container _parent;
-        private Dictionary<Type, InjectDef> defs = new Dictionary<Type, InjectDef>();
+        private Dictionary<string, Provider> _providers = new Dictionary<string, Provider>();
 
-        public Container parent
+        public Container parent => _parent;
+
+        public void Reset()
         {
-            get { return _parent; }
+            _providers.Clear();
         }
 
         public Container CreateChild()
@@ -37,9 +42,109 @@ namespace Au.DI
             return new Container(this);
         }
 
+        public bool HasToken(string token)
+        {
+            return _providers.ContainsKey(token);
+        }
+
+        public object Resolve(Type type)
+        {
+            return Resolve(type.FullName, type);
+        }
+
         public T Resolve<T>()
         {
-            return default(T);
+            return (T)Resolve(typeof(T));
+        }
+
+        public T Resolve<T>(int token)
+        {
+            return (T)Resolve(token.ToString(), typeof(T));
+        }
+
+        public T Resolve<T>(string token)
+        {
+            return (T)Resolve(token.ToString(), typeof(T));
+        }
+
+        public object Resolve(string token, Type type)
+        {
+            // search current container
+            if (_providers.TryGetValue(token, out var provider))
+            {
+                return provider.GetObject(this);
+            }
+
+            //search parent contaner
+            var p = parent;
+            while (p != null)
+            {
+                if (p.HasToken(token))
+                {
+                    var r = p.Resolve(token, type);
+                    Assert.IsNotNull(r);
+                    return r;
+                }
+                p = p.parent;
+            }
+
+            // if singleton
+            var singleton = type.GetCustomAttribute<SingletonAttribute>();
+            if (singleton != null)
+            {
+                root.Register(type);
+                return root.Resolve(type);
+            }
+
+            // if injectable
+            var injectable = type.GetCustomAttribute<InjectableAttribute>();
+            if (injectable != null)
+            {
+                if (injectable.lifecycle == Lifecycle.Transient)
+                {
+                    var prov = Provider.UseType(type);
+                    return prov.GetObject(this);
+                }
+                else if (injectable.lifecycle == Lifecycle.Singleton)
+                {
+                    root.Register(type);
+                    return root.Resolve(type);
+                }
+                else
+                {
+                    Register(type);
+                    return Resolve(type);
+                }
+            }
+
+            throw new Exception($"{token} ({type}) is not injectable");
+        }
+
+
+        public void Register(string token, Provider provider)
+        {
+            Assert.IsFalse(_providers.ContainsKey(token));
+            _providers.Add(token, provider);
+        }
+
+        public void Register(int token, Provider provider)
+        {
+            Register(token.ToString(), provider);
+        }
+
+        public void Register(Type type)
+        {
+            Register(type.FullName, Provider.UseType(type));
+        }
+
+        public void Register<T>()
+        {
+            Register(typeof(T));
+        }
+
+        public void Register<T, C>() where C : T
+        {
+            Register(typeof(T).FullName, Provider.UseClass<T, C>());
         }
     }
 }
