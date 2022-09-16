@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Au.DI.Providers
 {
@@ -13,12 +15,15 @@ namespace Au.DI.Providers
         object cache;
         readonly Type type;
 
-        protected override object GetValue(Container container)
+        protected override object OnGetValue(Container container)
         {
             if (cache != null)
             {
                 return cache;
             }
+
+            // check registry
+            type.GetCustomAttributes<RegistryAttribute>()?.ToList().ForEach(i => container.Register(i.type, i.useType));
 
             var ctor = type.GetConstructors()[0];
             var pis = ctor.GetParameters();

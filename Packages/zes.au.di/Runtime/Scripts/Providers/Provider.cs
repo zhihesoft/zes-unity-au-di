@@ -19,21 +19,16 @@ namespace Au.DI.Providers
             return new ValueProvider(value);
         }
 
-        public static Provider UseClass<T, C>() where C : T
-        {
-            return new ClassProvider<T, C>();
-        }
-
         public static Provider Factory<T>(Func<Container, T> factory)
         {
             return new FactoryProvider<T>(factory);
         }
 
-        public object GetObject(Container container)
+        public object GetValue(Container container)
         {
-            return GetValue(container);
+            return OnGetValue(container);
         }
 
-        protected abstract object GetValue(Container container);
+        protected abstract object OnGetValue(Container container);
     }
 }

@@ -11,7 +11,7 @@ namespace Au.DI.Providers
 
         private readonly Func<Container, T> factory;
 
-        protected override object GetValue(Container container)
+        protected override object OnGetValue(Container container)
         {
             return factory(container);
         }

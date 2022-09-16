@@ -72,7 +72,7 @@ namespace Au.DI
             // search current container
             if (_providers.TryGetValue(token, out var provider))
             {
-                return provider.GetObject(this);
+                return provider.GetValue(this);
             }
 
             //search parent contaner
@@ -87,6 +87,8 @@ namespace Au.DI
                 }
                 p = p.parent;
             }
+
+            // no existed instance found, create new one
 
             // if singleton
             var singleton = type.GetCustomAttribute<SingletonAttribute>();
@@ -103,7 +105,7 @@ namespace Au.DI
                 if (injectable.lifecycle == Lifecycle.Transient)
                 {
                     var prov = Provider.UseType(type);
-                    return prov.GetObject(this);
+                    return prov.GetValue(this);
                 }
                 else if (injectable.lifecycle == Lifecycle.Singleton)
                 {
@@ -132,9 +134,9 @@ namespace Au.DI
             Register(token.ToString(), provider);
         }
 
-        public void Register(Type type)
+        public void Register(Type type, Type useType = null)
         {
-            Register(type.FullName, Provider.UseType(type));
+            Register(type.FullName, Provider.UseType(useType ?? type));
         }
 
         public void Register<T>()
@@ -144,7 +146,7 @@ namespace Au.DI
 
         public void Register<T, C>() where C : T
         {
-            Register(typeof(T).FullName, Provider.UseClass<T, C>());
+            Register(typeof(T), typeof(C));
         }
     }
 }

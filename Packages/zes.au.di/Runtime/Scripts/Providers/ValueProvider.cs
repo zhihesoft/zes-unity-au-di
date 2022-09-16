@@ -9,7 +9,7 @@
 
         private object value;
 
-        protected override object GetValue(Container container)
+        protected override object OnGetValue(Container container)
         {
             return value;
         }
