@@ -14,8 +14,8 @@ public class DiRegistry : IPrebuildSetup, IPostBuildCleanup
         var inf = Container.root.Resolve<DiTestInterface>();
         var tst = Container.root.Resolve<DiTest>();
 
-        Assert.IsNotNull(reg);
-        Assert.IsNotNull(tst);
+        Assert.IsTrue(reg != null && reg.GetType() == typeof(DiRegistry));
+        Assert.IsTrue(tst != null && tst.GetType() == typeof(DiTest));
         Assert.IsTrue(inf.GetType() == typeof(DiTestClass));
     }
 
