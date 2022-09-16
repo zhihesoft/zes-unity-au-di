@@ -69,11 +69,7 @@ public class DiTest : IPrebuildSetup, IPostBuildCleanup
     {
         Container.root.Reset();
         count = 0;
-        //var tempType = typeof(Dictionary<,>);
-        //var dict = new Dictionary<string, string>();
-        //var dictType = typeof(Dictionary<string, string>);
-        //Debug.Log($"{typeof(Dictionary<,>)} isGenericType: {tempType.IsGenericType}");
-        //Debug.Log($"dict type {dictType} isGenericType: {dictType.IsGenericType} base: {dictType.GetGenericTypeDefinition()} ");
+        Container.root.Register("test_string", Provider.UseValue("hello world"));
     }
 
     public void Cleanup()

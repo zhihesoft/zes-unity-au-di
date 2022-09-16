@@ -30,8 +30,17 @@ namespace Au.DI.Providers
             var list = new List<object>();
             foreach (var pi in pis)
             {
-                var o = container.Resolve(pi.ParameterType);
-                list.Add(o);
+                var inj = pi.GetCustomAttribute<InjectAttribute>();
+                if (inj != null)
+                {
+                    var o = container.Resolve(inj.token, pi.ParameterType);
+                    list.Add(o);
+                }
+                else
+                {
+                    var o = container.Resolve(pi.ParameterType);
+                    list.Add(o);
+                }
             }
             cache = ctor.Invoke(list.ToArray());
             return cache;
