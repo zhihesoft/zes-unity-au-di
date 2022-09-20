@@ -1,7 +1,7 @@
 {
   "name": "zes.au.di",
   "displayName": "Au Injection",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Dependence Inject Library for Au",
   "keywords": [
     "Script"
